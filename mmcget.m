@@ -16,12 +16,17 @@ version = "v0.1.0".
 usage(!IO) :-
     io.progname_base("mmc-get", Program, !IO),
     io.format(io.stderr_stream,
-        "usage: %s update           # update mmc-get package lists\n" ++
+        "usage: %s update              # update mmc-get package lists\n" ++
         "usage: %s version\n" ++
-        "usage: %s list [<filter>]  # list packages, with optional filter\n" ++
-        "usage: %s brief [<filter>] # list packages, with optional filter\n" ++
-        "usage: %s get <name>       # clone package into the working directory\n",
-        [s(Program), s(Program), s(Program), s(Program), s(Program)], !IO),
+        "usage: %s list [<filter>]     # list packages, with optional filter\n" ++
+        "usage: %s listall [<filter>]  # ... including unreviewed packages\n" ++
+        "usage: %s brief [<filter>]    # ... with less information\n" ++
+        "usage: %s briefall [<filter>]\n" ++
+        "usage: %s get <name>          # clone package into the working directory\n",
+        [
+            s(Program), s(Program), s(Program), s(Program),
+            s(Program), s(Program), s(Program)
+        ], !IO),
     io.set_exit_status(1, !IO).
 
 main(!IO) :-
@@ -32,15 +37,27 @@ main(!IO) :-
     else if Args = ["version"] then
         io.format("mmc-get version %s\n", [s(version)], !IO)
     else if Args = ["list"] then
-        solutions(grep(""), L),
+        solutions(grep_reviewed(""), L),
         foldl(write_package, L, !IO)
     else if Args = ["list", Filter] then
-        solutions(grep(Filter), L),
+        solutions(grep_reviewed(Filter), L),
         foldl(write_package, L, !IO)
     else if Args = ["brief"] then
-        solutions(grep(""), L),
+        solutions(grep_reviewed(""), L),
         foldl(write_brief_package, L, !IO)
     else if Args = ["brief", Filter] then
+        solutions(grep_reviewed(Filter), L),
+        foldl(write_brief_package, L, !IO)
+    else if Args = ["listall"] then
+        solutions(grep(""), L),
+        foldl(write_package, L, !IO)
+    else if Args = ["listall", Filter] then
+        solutions(grep(Filter), L),
+        foldl(write_package, L, !IO)
+    else if Args = ["briefall"] then
+        solutions(grep(""), L),
+        foldl(write_brief_package, L, !IO)
+    else if Args = ["briefall", Filter] then
         solutions(grep(Filter), L),
         foldl(write_brief_package, L, !IO)
     else if
@@ -126,6 +143,11 @@ Description      ? %s
     s(join_list(", ", P^apps ++ P^libs)), s(string(P^deps)), s(string(P^vcs)),
     s(string(P^release)), s(string(P^foreign)), s(P^description)
 ]).
+
+:- pred grep_reviewed(string::in, reviewed::out) is nondet.
+grep_reviewed(Substr, R @ reviewed(P)) :-
+    packages(P),
+    sub_string_search(to_lower(dump_package(R)), to_lower(Substr), _).
 
 :- pred grep(string::in, reviewed::out) is nondet.
 grep(Substr, R) :-
