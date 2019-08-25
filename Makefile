@@ -1,4 +1,4 @@
-FILES=package postpackage analysis lint mmcget manager
+FILES=package postpackage analysis lint mmcget manager ioextra
 BIN=postpackage lint mmc-get
 DEPS=package.m manager.m
 GENEXT=d,o,mh,err,c,c_date,mh

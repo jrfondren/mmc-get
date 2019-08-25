@@ -75,10 +75,10 @@ main(!IO) :-
         Args = ["get", Want],
         solutions(want(Want), [R @ unreviewed(Package)])
     then
-        %write_package(R, !IO),  % segfaults
-        %ask_to_clone(R, !IO)
-        write_package(unreviewed(Package), !IO),
-        ask_to_clone(unreviewed(Package), !IO)
+        write_package(R, !IO),  % segfaults
+        ask_to_clone(R, !IO)
+        %write_package(unreviewed(Package), !IO),
+        %ask_to_clone(unreviewed(Package), !IO)
     else if Args = ["get", Want] then
         solutions(want(Want), L),
         show_choices(dump_package, 1, L, !IO),
