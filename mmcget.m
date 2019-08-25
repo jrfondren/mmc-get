@@ -8,6 +8,7 @@
 :- use_module ioextra, dir.
 
 :- type reviewed ---> reviewed(package) ; unreviewed(package).
+:- inst unreviewed for reviewed/0 ---> unreviewed(ground).
 
 :- func version = string.
 version = "v0.1.0".
@@ -70,6 +71,14 @@ main(!IO) :-
         solutions(want(Want), [reviewed(Package)])
     then
         clone(Package^vcs, Package, !IO)
+    else if
+        Args = ["get", Want],
+        solutions(want(Want), [R @ unreviewed(Package)])
+    then
+        %write_package(R, !IO),  % segfaults
+        %ask_to_clone(R, !IO)
+        write_package(unreviewed(Package), !IO),
+        ask_to_clone(unreviewed(Package), !IO)
     else if Args = ["get", Want] then
         solutions(want(Want), L),
         show_choices(dump_package, 1, L, !IO),
@@ -80,14 +89,7 @@ main(!IO) :-
         ;
             Res = ok(unreviewed(Package)),
             write_package(unreviewed(Package), !IO),
-            yn_prompt("Really get unreviewed package?", B, !IO),
-            (
-                B = yes,
-                clone(Package^vcs, Package, !IO)
-            ;
-                B = no,
-                io.set_exit_status(1, !IO)
-            )
+            ask_to_clone(unreviewed(Package), !IO)
         ;
             ( Res = eof ; Res = error(_) ),
             io.set_exit_status(1, !IO)
@@ -96,6 +98,17 @@ main(!IO) :-
         io.format(io.stderr_stream, "didn't understand these args: %s\n",
             [s(string(Args))], !IO),
         usage(!IO)
+    ).
+
+:- pred ask_to_clone(reviewed::in(unreviewed), io::di, io::uo) is det.
+ask_to_clone(unreviewed(Package), !IO) :-
+    yn_prompt("Really get unreviewed package?", B, !IO),
+    (
+        B = yes,
+        clone(Package^vcs, Package, !IO)
+    ;
+        B = no,
+        io.set_exit_status(1, !IO)
     ).
 
 :- pred write_package(reviewed::in, io::di, io::uo) is det.
