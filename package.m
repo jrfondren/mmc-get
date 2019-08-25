@@ -23,6 +23,7 @@
                 name :: string,
                 license :: licenses,
                 vcs :: vcs,
+                release :: releases,
                 url :: string,
                 tags :: list(string),
                 libs :: list(string),
@@ -69,7 +70,8 @@ load_packages(Res, Filename, !IO) :-
     io.open_input(Filename, Res0, !IO),
     (
         Res0 = ok(Stream),
-        load_packages_from_stream(Res, Stream, !IO)
+        load_packages_from_stream(Res, Stream, !IO),
+        io.close_input(Stream, !IO)
     ;
         Res0 = error(E),
         Res = error(E)
@@ -124,8 +126,8 @@ valid_char(C) :-
         to_int(C) < to_int(' ')  % control chars, \n, etc.
     ).
 
-tidy(package(Name, L, V, Url, Tags, Libs, Apps, Deps, F, Desc, Comment)) =
-    package(strip(Name), L, V, strip(Url),
+tidy(package(Name, L, V, R, Url, Tags, Libs, Apps, Deps, F, Desc, Comment)) =
+    package(strip(Name), L, V, R, strip(Url),
         nz(Tags), nz(Libs), nz(Apps), nz(Deps),
         F, strip(Desc), strip(Comment)).
 
