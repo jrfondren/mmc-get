@@ -54,9 +54,25 @@ unreviewed(P) :-
 init_packages(!IO) :-
     package_paths(Reviewed, Unreviewed, !IO),
     load_packages(Res1, Reviewed, !IO),
-    ( if Res1 = ok(P1) then set_reviewed(P1, !IO) else true ),
     load_packages(Res2, Unreviewed, !IO),
-    ( if Res2 = ok(P2) then set_unreviewed(P2, !IO) else true ).
+    ( if
+        Res1 = ok(P1),
+        Res2 = ok(P2)
+    then
+        set_reviewed(P1, !IO),
+        set_unreviewed(P2, !IO)
+    else if
+        Res1 = error(E1),
+        Res2 = error(E2),
+        sub_string_search(string({E1,E2}), "the term read did not have the right type", _)
+    then
+        io.format(io.stderr_stream,
+            "Failed to parse package lists. You may need to update mmc-get.\n"
+            ++ "Check: %s\nCheck: %s\n", [s(Reviewed), s(Unreviewed)], !IO),
+        io.set_exit_status(1, !IO)
+    else
+        true
+    ).
 
 :- type maybeio == (pred(maybe(string), io, io)).
 :- inst maybeio == (pred(out, di, uo) is det).

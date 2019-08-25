@@ -103,13 +103,13 @@ Tags             : %s
 License          : %s
 Builds           : %s
 Dependencies     : %s
-Version Control  : %s
+Version Control  : %s (releases: %s)
 FFI              : %s
 Description      : %s
 ", [
     s(P^name), s(P^url), s(join_list(" ", P^tags)), s(string(P^license)),
     s(join_list(", ", P^apps ++ P^libs)), s(string(P^deps)), s(string(P^vcs)),
-    s(string(P^foreign)), s(P^description)
+    s(string(P^release)), s(string(P^foreign)), s(P^description)
 ]).
 dump_package(unreviewed(P)) = string.format("
 Name (UNREVIEWED)? %s
@@ -118,13 +118,13 @@ Tags             ? %s
 License          ? %s
 Builds           ? %s
 Dependencies     ? %s
-Version Control  ? %s
+Version Control  : %s (releases: %s)
 FFI              ? %s
 Description      ? %s
 ", [
     s(P^name), s(P^url), s(join_list(" ", P^tags)), s(string(P^license)),
     s(join_list(", ", P^apps ++ P^libs)), s(string(P^deps)), s(string(P^vcs)),
-    s(string(P^foreign)), s(P^description)
+    s(string(P^release)), s(string(P^foreign)), s(P^description)
 ]).
 
 :- pred grep(string::in, reviewed::out) is nondet.
