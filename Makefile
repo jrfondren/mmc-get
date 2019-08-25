@@ -12,6 +12,9 @@ deploy:: all
 	mv -f -v postpackage $(HOME)/public_html/packages/postpackage.cgi
 	mv -f -v lint $(HOME)/bin/
 
+install:: mmc-get
+	mv -f -v mmc-get $(HOME)/bin/
+
 %: %.m $(DEPS)
 	mmc $(FLAGS) --make $@
 
