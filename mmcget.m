@@ -73,10 +73,8 @@ main(!IO) :-
         clone(Package^vcs, Package, !IO)
     else if
         Args = ["get", Want],
-        solutions(want(Want), [R @ unreviewed(Package)])
+        solutions(want(Want), [unreviewed(Package)])
     then
-        %write_package(R, !IO),  % segfaults
-        %ask_to_clone(R, !IO)
         write_package(unreviewed(Package), !IO),
         ask_to_clone(unreviewed(Package), !IO)
     else if Args = ["get", Want] then
