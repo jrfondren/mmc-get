@@ -61,37 +61,38 @@ main(!IO) :-
     else if Args = ["briefall", Filter] then
         solutions(grep(Filter), L),
         foldl(write_brief_package, L, !IO)
-    else if
-        Args = ["get", Want],
-        solutions(exact(to_lower(Want)), [reviewed(Package)])
-    then
-        clone(Package^vcs, Package, !IO)
-    else if
-        Args = ["get", Want],
-        solutions(want(Want), [reviewed(Package)])
-    then
-        clone(Package^vcs, Package, !IO)
-    else if
-        Args = ["get", Want],
-        solutions(want(Want), [unreviewed(Package)])
-    then
-        write_package(unreviewed(Package), !IO),
-        ask_to_clone(unreviewed(Package), !IO)
     else if Args = ["get", Want] then
-        solutions(want(Want), L),
-        show_choices(dump_package, 1, L, !IO),
-        choose(Res, L, !IO),
-        (
-            Res = ok(reviewed(Package)),
+        ( if solutions(exact(to_lower(Want)), [reviewed(Package)]) then
             clone(Package^vcs, Package, !IO)
-        ;
-            Res = ok(unreviewed(Package)),
-            write_package(unreviewed(Package), !IO),
-            ask_to_clone(unreviewed(Package), !IO)
-        ;
-            ( Res = eof ; Res = error(_) ),
-            io.set_exit_status(1, !IO)
+        else
+            solutions(want(Want), L),
+            ( if L = [reviewed(Package)] then
+                clone(Package^vcs, Package, !IO)
+            else if L = [unreviewed(Package)] then
+                write_package(unreviewed(Package), !IO),
+                ask_to_clone(unreviewed(Package), !IO)
+            else if L = [] then
+                io.format(io.stderr_stream, "No package matched ``%s''\n",
+                    [s(Want)], !IO),
+                io.set_exit_status(1, !IO)
+            else
+                show_choices(dump_package, 1, L, !IO),
+                choose(Res, L, !IO),
+                (
+                    Res = ok(reviewed(Package)),
+                    clone(Package^vcs, Package, !IO)
+                ;
+                    Res = ok(unreviewed(Package)),
+                    write_package(unreviewed(Package), !IO),
+                    ask_to_clone(unreviewed(Package), !IO)
+                ;
+                    ( Res = eof ; Res = error(_) ),
+                    io.set_exit_status(1, !IO)
+                )
+            )
         )
+    else if Args = ["help"] then
+        usage(!IO)
     else
         io.format(io.stderr_stream, "didn't understand these args: %s\n",
             [s(string(Args))], !IO),
