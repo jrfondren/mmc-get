@@ -182,7 +182,9 @@ clone(git, Package, !IO) :-
         Res = ok(Pid),
         ioextra.waitpid(Pid, Res2, !IO),
         (
-            Res2 = ok
+            Res2 = ok,
+            ioextra.chdir(Package^name, _, !IO),
+            release(git, Package^release, Package, !IO)
         ;
             Res2 = error(_),
             io.write_string(io.stderr_stream, "`git clone' failed; is git in PATH?\n", !IO),
@@ -210,7 +212,8 @@ clone(fossil, Package, !IO) :-
                     ioextra.spawn("fossil", ["open", ".fossil"], Res3, !IO),
                     (
                         Res3 = ok(Pid2),
-                        ioextra.waitpid(Pid2, _, !IO)
+                        ioextra.waitpid(Pid2, _, !IO),
+                        release(fossil, Package^release, Package, !IO)
                     ;
                         Res3 = error(_),
                         throw(Res3)
@@ -232,6 +235,12 @@ clone(fossil, Package, !IO) :-
         Exists = yes,
         throw(Target ++ " already exists")
     ).
+
+:- pred release(vcs::in, releases::in, package::in, io::di, io::uo) is det.
+release(_, head, _, !IO).
+release(_VCS, tag, _Package, !IO).
+    %tags.tags(Tags, VCS, Package, !IO),
+    %tags.checkout(tag.latest(Tags), VCS, Package, !IO).
 
 :- pred yn_prompt(string::in, bool::out, io::di, io::uo) is det.
 yn_prompt(S, B, !IO) :-
