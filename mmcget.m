@@ -8,7 +8,7 @@
 :- use_module ioextra, dir.
 
 :- type reviewed ---> reviewed(package) ; unreviewed(package).
-:- inst unreviewed for reviewed/0 ---> unreviewed(ground).
+:- inst unreviewed ---> unreviewed(ground).
 
 :- func version = string.
 version = "v0.1.0".
