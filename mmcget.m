@@ -11,7 +11,7 @@
 :- inst unreviewed ---> unreviewed(ground).
 
 :- func version = string.
-version = "v0.1.0".
+version = "v0.1.1".
 
 :- pred usage(io::di, io::uo) is det.
 usage(!IO) :-
