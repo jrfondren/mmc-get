@@ -32,8 +32,14 @@ At present, mmc-get is good for finding and getting Mercury packages into the
 current directory, and not much else. It's missing lots of nice-to-have
 features from typical package managers.
 
-## build
+## build (assuming a recent release-of-the-day compiler)
 ```
+make
+```
+
+## build (on Mercury 14.01)
+```
+git checkout 14.01-compat
 make
 ```
 
