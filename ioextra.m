@@ -30,6 +30,9 @@
 #include <sys/wait.h>
 #include <spawn.h>
 #include <fcntl.h>
+#ifdef __APPLE__
+#include <crt_externs.h>
+#endif
 ").
 
 :-  pragma foreign_proc("C",
@@ -67,6 +70,9 @@ waitpid(Pid, Result, !IO) :-
     int pid = Pid;
     int i;
     char **args = malloc(sizeof(char *) * (Len + 2));
+#ifdef __APPLE__
+    char **environ = _NSGetEnviron();
+#endif
     args[0] = Command;
     args[Len + 1] = NULL;
     for (i = 0; i < Len; i++) {
