@@ -15,22 +15,21 @@
 :- mutable(unreviewed, list(package), [], ground, [untrailed, attach_to_io_state]).
 :- initialize init_packages/2.
 
-:- func reviewed_url = string.
-:- func unreviewed_url = string.
-reviewed_url = "https://mercury-in.space/packages/packages.list".
-unreviewed_url = "https://mercury-in.space/packages/unreviewed.list".
-
-:- pred package_paths(string::out, string::out, io::di, io::uo) is det.
-package_paths(Reviewed, Unreviewed, !IO) :-
+:- pred package_paths(string::out, string::out, string::out, string::out, io::di, io::uo) is det.
+package_paths(Reviewed, Unreviewed, ReviewedUrl, UnreviewedUrl, !IO) :-
     configdir(Config, !IO),
     ioextra.mkdir(Config, !IO),
     Reviewed = dir.(Config / "reviewed.list"),
-    Unreviewed = dir.(Config / "unreviewed.list").
+    Unreviewed = dir.(Config / "unreviewed.list"),
+    io.get_environment_var("MERCURY_PKG_PATH", PkgPath, !IO),
+    Prefix = maybe.maybe_default("https://mercury-in.space/packages", PkgPath),
+    string.append(Prefix, "/packages.list", ReviewedUrl),
+    string.append(Prefix, "/unreviewed.list", UnreviewedUrl).
 
 update_packages(!IO) :-
-    package_paths(Reviewed, Unreviewed, !IO),
-    io.call_system("wget -O " ++ Reviewed ++ " " ++ reviewed_url, Res1, !IO),
-    io.call_system("wget -O " ++ Unreviewed ++ " " ++ unreviewed_url, Res2, !IO),
+    package_paths(Reviewed, Unreviewed, ReviewedUrl, UnreviewedUrl, !IO),
+    io.call_system("curl -o " ++ Reviewed ++ " " ++ ReviewedUrl, Res1, !IO),
+    io.call_system("curl -o " ++ Unreviewed ++ " " ++ UnreviewedUrl, Res2, !IO),
     ( if
         Res1 = ok(0),
         Res2 = ok(0)
@@ -52,7 +51,7 @@ unreviewed(P) :-
 
 :- pred init_packages(io::di, io::uo) is det.
 init_packages(!IO) :-
-    package_paths(Reviewed, Unreviewed, !IO),
+    package_paths(Reviewed, Unreviewed, _, _, !IO),
     load_packages(Res1, Reviewed, !IO),
     load_packages(Res2, Unreviewed, !IO),
     ( if

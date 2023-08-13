@@ -4,7 +4,7 @@
 :- pred main(io::di, io::uo) is det.
 :- implementation.
 :- import_module package, manager, solutions.
-:- import_module list, string, exception, bool, int.
+:- import_module list, string, exception, bool, int, maybe.
 :- use_module ioextra, dir.
 
 :- type reviewed ---> reviewed(package) ; unreviewed(package).
@@ -34,7 +34,9 @@ main(!IO) :-
     io.command_line_arguments(Args, !IO),
     ( if Args = ["update"] then
         update_packages(!IO),
-        io.call_system("curl https://mercury-in.space/packages/news", _, !IO)
+        io.get_environment_var("MERCURY_PKG_PATH", PkgPath, !IO),
+        string.append_list(["curl ", maybe.maybe_default("https://mercury-in.space/packages", PkgPath), "/news"], Cmd),
+        io.call_system(Cmd, _, !IO)
     else if Args = ["version"] then
         io.format("mmc-get version %s\n", [s(version)], !IO)
     else if Args = ["list"] then
