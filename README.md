@@ -72,6 +72,11 @@ non-browser script or an AJAX call) and then appends it to a file.
 ## package.m et al.
 These are libraries supporting the above applications.
 
+## Private Repos
+You can override the default Internet-wide package repo location by setting the `MERCURY_PKG_PATH` environment variable.
+This is particularly useful when used with `file://` URLs, supporting structuring a project as a set of private components defined in the *unreviewed.packages* file.  
+*NB*: this replaces the usual repo, so if you also want to use public packages ensure that you start from the package definition files on the Internet.
+
 ## caveats
 - postpackage.cgi is not that secure and should, at a minimum, run as an unprivileged user with a filesystem quota.
 - despite any suggestions from name 'mmc-get', it is not an official part of Mercury.
