@@ -36,7 +36,7 @@ update_packages(!IO) :-
     then
         true
     else
-        throw("wget failed")
+        throw("curl failed")
     ).
 
 :- pragma promise_pure packages/1.
